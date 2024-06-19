@@ -46,14 +46,15 @@ def predict():
             prepared_image = prepare_image(image, target=(224, 224))
 
             # القيام بالتنبؤ باستخدام النموذج
-            preds = model.predict(prepared_image)
+            preds = model.predict(prepared_image)[0]  # نأخذ أول عنصر في القائمة لأنها لديها بعد واحد فقط
 
-            # استخراج التصنيف من التنبؤات
-            pred_class_index = np.argmax(preds, axis=1)[0]
-            pred_class = classes[pred_class_index]
+            # إعادة التصنيفات مع الاحتماليات بنسبة مئوية
+            results = []
+            for i, pred in enumerate(preds):
+                probability_percent = float(pred) * 100
+                results.append({"class": classes[i], "probability": f"{probability_percent:.2f}%"})
 
-            # إعادة التصنيف كاستجابة
-            return jsonify({"class": pred_class})
+            return jsonify({"predictions": results})
         except Exception as e:
             return jsonify({"error": str(e)}), 500
     else:
